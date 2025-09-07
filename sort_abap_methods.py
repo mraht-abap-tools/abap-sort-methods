@@ -1,4 +1,33 @@
-import re, os.path as path;
+# Version: 07.09.2025-001
+
+import logging
+import re
+import os.path as path;
+
+def info(msg):
+    logging.info(msg)
+    print(msg)
+# ENDDEF
+
+def error(msg):
+    logging.error(msg)
+    print(msg)
+# ENDDEF
+
+def inputFileName():
+    fileName = '';
+    while True:
+        fileName = input('Dateiname: ');
+        fileName = fileName.translate({ord(i):None for i in '\'"&'}).lstrip();
+        if fileName != '' and path.exists(fileName):
+            break;
+        else:
+            print('Please enter a valid file name!');
+        #ENDIF
+    # ENDWHILE
+
+    return fileName;
+# ENDDEF
 
 def readFileLines(fileName):
     fileHandler = open(fileName, "r", errors='ignore');
@@ -9,7 +38,6 @@ def readFileLines(fileName):
     return fileContent.splitlines();
 # ENDDEF
 
-#TODO Consider sections in definition part
 def extractMethod(fileLines):
     # Extract method names
     newFileContentList = [];
@@ -53,7 +81,6 @@ def extractMethod(fileLines):
     # ENDFOR
 
     return methods, newFileContentList;
-
 # ENDDEF
 
 
@@ -175,7 +202,6 @@ def createNewFileContent(newFileContentList, methods):
     # ENDFOR
 
     return newFileContent;
-
 # ENDDEF
 
 
@@ -187,21 +213,26 @@ def writeNewFileContent(fileName, newFileContent):
     fileHandler.close();
 # ENDDEF
 
+def execute():
+    logging.basicConfig(level=logging.DEBUG, filename="log.txt", filemode="a+",
+                        format="%(asctime)-15s %(levelname)-8s %(message)s");
 
-fileName = '';
-while True:
-    fileName = input('Dateiname: ');
-    fileName = fileName.translate({ord(i):None for i in '\'"&'}).lstrip();
-    if fileName != '' and path.exists(fileName):
-        break;
-    else:
-        print('Please enter a valid file name!');
-    #ENDIF
-# ENDWHILE
+    info('************************************* SORT_ABAP_METHODS **************************************');
+    print(f"Enter 'quit' or 'STRG+C' to quit\n");
 
-fileLines = readFileLines(fileName);
-methods, newFileContentList = extractMethod(fileLines);
-newFileContent = createNewFileContent(newFileContentList, methods);
-writeNewFileContent(fileName, newFileContent);
+    fileName = inputFileName();
 
-print('Conversion successfully executed.');
+    info('**********************************************************************************************');
+
+    fileLines = readFileLines(fileName);
+    methods, newFileContentList = extractMethod(fileLines);
+    newFileContent = createNewFileContent(newFileContentList, methods);
+    writeNewFileContent(fileName, newFileContent);
+
+    info('Conversion successfully executed.');
+    return True;
+# ENDDEF
+
+runApp = True;
+while runApp == True:
+    runApp = execute();
