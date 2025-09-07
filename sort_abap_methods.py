@@ -1,7 +1,7 @@
 import re, os.path as path;
 
 def readFileLines(fileName):
-    fileHandler = open(fileName, "r");
+    fileHandler = open(fileName, "r", errors='ignore');
     fileContent = fileHandler.read();
     fileHandler.flush();
     fileHandler.close();
@@ -28,9 +28,9 @@ def extractMethod(fileLines):
             line = "\n" + line;
         #ENDIF
 
-        if result := re.search('(\w+)\s+SECTION', line):
+        if result := re.search(r'(\w+)\s+SECTION', line):
             sectionType += 1;
-        elif re.search('ENDCLASS', line):
+        elif re.search(r'ENDCLASS', line):
             isClassDef = False;
             isClassImp = False;
         #ENDIF
@@ -45,9 +45,9 @@ def extractMethod(fileLines):
             newFileContentList.append(line);
         # ENDIF
 
-        if re.search('CLASS[\s\S]*DEFINITION', line):
+        if re.search(r'CLASS[\s\S]*DEFINITION', line):
             isClassDef = True;
-        elif re.search('CLASS[\s\S]*IMPLEMENTATION', line):
+        elif re.search(r'CLASS[\s\S]*IMPLEMENTATION', line):
             isClassImp = True;
         # ENDIF
     # ENDFOR
@@ -62,16 +62,16 @@ def detMethodDef(line, methods, isMethodDef, sectionType, methodName, methodType
         isMethodDef = True;
         methods.append(['', sectionType, '', '']);
         methodName = '';
-        if result := re.search('METHODS:?\s+(\w+)', line):
+        if result := re.search(r'METHODS:?\s+(\w+)', line):
             methodName = result.group(1);
         # ENDIF
-        if re.search('CLASS-METHODS', line):
+        if re.search(r'CLASS-METHODS', line):
             methodType = 'CLASS-METHODS';
-        elif re.search('METHODS', line):
+        elif re.search(r'METHODS', line):
             methodType = 'METHODS';
         # ENDIF
     elif isMethodDef == True and methodName == '':
-        if result := re.search('\s*(\w+)', line):
+        if result := re.search(r'\s*(\w+)', line):
             methodName = result.group(1);
         # ENDIF
     # ENDIF
@@ -87,18 +87,18 @@ def detMethodDef(line, methods, isMethodDef, sectionType, methodName, methodType
     #ENDIF
 
     isEndOfDef = False;
-    if isMethodDef == True and re.search(',', line):
+    if isMethodDef == True and re.search(r',', line):
         isEndOfDef = True;
         methods[methodIndex][2] = methods[methodIndex][2].replace(",", ".");
         methods.append(['', sectionType, '', '']);
-    elif isMethodDef == True and re.search('.*\.+', line):
+    elif isMethodDef == True and re.search(r'.*\.+', line):
         isEndOfDef = True;
         isMethodDef = False;
     # ENDIF
 
     if isEndOfDef == True:
-        if not re.search('METHODS', methods[methodIndex][2]):
-            result = re.search('\w', methods[methodIndex][2]);
+        if not re.search(r'METHODS', methods[methodIndex][2]):
+            result = re.search(r'\w', methods[methodIndex][2]);
             startIndex = result.start();
             methods[methodIndex][2] = methods[methodIndex][2][:startIndex] + \
                 methodType + ' ' + methods[methodIndex][2][startIndex:];
@@ -116,7 +116,7 @@ def detMethodDef(line, methods, isMethodDef, sectionType, methodName, methodType
 
 def detMethodImp(line, methods, isMethodImp, methodIndex, newFileContentList):
     # Check if method implementation
-    if result := re.search('^\s*METHOD\s+(\w+)', line):
+    if result := re.search(r'^\s*METHOD\s+(\w+)', line):
         isMethodImp = True;
     # ENDIF
 
@@ -135,7 +135,7 @@ def detMethodImp(line, methods, isMethodImp, methodIndex, newFileContentList):
         methods[methodIndex][3] += line;
     # ENDIF
 
-    if isMethodImp == True and re.search('ENDMETHOD', line):
+    if isMethodImp == True and re.search(r'ENDMETHOD', line):
         isMethodImp = False;
         newFileContentList.append(methods[methodIndex][3]);
     elif isMethodImp == False:
@@ -155,10 +155,10 @@ def createNewFileContent(newFileContentList, methods):
     methods = sorted(methods, key=lambda m: (m[1], m[0].lower().replace("_", "{")));
 
     for line in newFileContentList:
-        if re.search('METHODS', line):           
+        if re.search(r'METHODS', line):           
             newFileContent += methods[methodIndex][2];
             methodIndex += 1;
-        elif re.search('^\s*METHOD', line):
+        elif re.search(r'^\s*METHOD', line):
             newFileContent += methods[methodIndex][3];
             methodIndex += 1;
         else:
