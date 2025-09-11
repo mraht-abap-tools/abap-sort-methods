@@ -4,6 +4,9 @@ import logging
 import re
 import os.path as path;
 
+import tkinter as tk 
+from tkinter import filedialog
+
 def info(msg):
     logging.info(msg)
     print(msg)
@@ -17,7 +20,10 @@ def error(msg):
 def inputFileName():
     fileName = '';
     while True:
-        fileName = input('Dateiname: ');
+        fileName = filedialog.askopenfilename(title='Dateiname', filetypes=[('ABAP files', '*.abap *.txt')]);
+        if fileName == '':
+            exit();
+        
         fileName = fileName.translate({ord(i):None for i in '\'"&'}).lstrip();
         if fileName != '' and path.exists(fileName):
             break;
